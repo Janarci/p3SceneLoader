@@ -23,7 +23,9 @@
 
 //
 typedef std::chrono::high_resolution_clock Clock;
-
+// Mouse position
+double mouse_x = 0.0;
+double mouse_y = 0.0;
 bool firstmouse = true;
 GLfloat lastX = 0;
 GLfloat lastY = 0;
@@ -56,9 +58,31 @@ GLuint multiTex;
 glm::mat4 projection;
 glm::mat4 transEarth, transMoon, transSun, transGanesha, transSword, transSkull, transPedestal, transFloor;
 
+
+/*ImGuiIO& io = ImGui::GetIO();
+	if (io.WantCaptureMouse)
+	{
+		std::cout << "returning" << std::endl;
+		return;
+
+	}*/
+
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	/*ImGuiIO& io = ImGui::GetIO();
+	if (io.WantCaptureMouse)
+	{
+		std::cout << "positive" << std::endl;
+
+	}
+	if (!io.WantCaptureMouse)
+	{
+
+		std::cout << "negative" << std::endl;
+	}*/
+	//std::cout << "in callback" << std::endl;
+
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	if (firstmouse) {
 		lastX = xpos;
 		lastY = ypos;
@@ -95,6 +119,7 @@ static void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 Runner::Runner()
 {
+
 	//SceneManager::getInstance();
 
 
@@ -127,13 +152,25 @@ Runner::Runner()
 		fprintf(stderr, "Failed to initialize GLEW\n");
 		return;
 	}
+
+
+	// Initialize ImGUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
 #pragma endregion
 
-
 	glGenTextures(8, texture);
+	glGenTextures(8, textures2);
+	glGenTextures(8, textures3);
+	glGenTextures(8, textures4);
+	glGenTextures(8, textures5);
 	glGenTextures(8, multiTexture);
 
-
+	
 #pragma region object
 
 	//SceneManager::getInstance()->loadModel(modelTransformLoc);
@@ -302,9 +339,10 @@ Runner::Runner()
 	std::string str2 = "models/obj2/";
 
 	// add pairs to the vector
+	//scene1.push_back(std::make_pair(&GaneshaObjData, "Ganesha/Ganesha.obj"));
+
 	scene1.push_back(std::make_pair(&SwordObjData, "Sword/moonlight.obj"));
 
-	scene1.push_back(std::make_pair(&GaneshaObjData, "Ganesha/Ganesha.obj"));
 
 
 
@@ -319,18 +357,52 @@ Runner::Runner()
 
 void Runner::run()
 {
-	ObjData obj1, obj2;
-	scene2.push_back(std::make_pair(&obj1, "Skull/Skull.obj"));
+	//put 3d models in the scene
+	ObjData backpacks2, crates2, skulls2;
 
-
-	//SceneManager::getInstance()->loadModel(modelTransformLoc, this);
-	objLoader scene1Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene1);
-	scene1Loader.start();
-
-	objLoader scene2Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene2);
-	scene2Loader.start();
+	scene2.push_back(std::make_pair(&skulls2, "Skull/Skull.obj"));
+	scene2.push_back(std::make_pair(&backpacks2, "backpack/backpack.obj"));
+	//scene2.push_back(std::make_pair(&pedestal, "pedestal/10421_square_pedastal_iterations-2.obj"));
+	//scene2.push_back(std::make_pair(&obj3, "earth/Earth.obj"));
+	scene2.push_back(std::make_pair(&crates2, "crate/Crate1.obj"));
+	//scene2.push_back(std::make_pair(&obj3, "bunny.obj"));
+	//scene2.push_back(std::make_pair(&obj4, "teacup.obj"));
 
 	
+	ObjData earths3, ganeshas3, teapots4;
+	//scene3.push_back(std::make_pair(&ganeshas3, "Ganesha/Ganesha.obj"));
+	scene3.push_back(std::make_pair(&earths3, "earth/Earth.obj"));
+	scene3.push_back(std::make_pair(&teapots4, "teacup.obj"));
+
+	ObjData pedestals4, skulls4, bunnys4;
+	scene4.push_back(std::make_pair(&pedestals4, "pedestal/10421_square_pedastal_iterations-2.obj"));
+	scene4.push_back(std::make_pair(&skulls4, "Skull/Skull.obj"));
+	scene4.push_back(std::make_pair(&bunnys4, "bunny.obj")
+	);
+
+	ObjData earths5, ganeshas5, swords5;
+	scene5.push_back(std::make_pair(&earths5, "earth/Earth.obj"));
+	//scene5.push_back(std::make_pair(&swords5, "Sword/moonlight.obj"));
+	scene5.push_back(std::make_pair(&ganeshas5, "Ganesha/Ganesha.obj"));
+
+
+
+
+	//start the threads
+	objLoader scene1Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene1, running);
+	scene1Loader.start();
+
+	objLoader scene2Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene2, running);
+	scene2Loader.start();
+
+	objLoader scene3Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene3, running);
+	scene3Loader.start();
+
+	objLoader scene4Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene4, running);
+	scene4Loader.start();
+
+	objLoader scene5Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene5, running);
+	scene5Loader.start();
 
 
 
@@ -351,12 +423,67 @@ void Runner::run()
 
 	glEnable(GL_DEPTH_TEST);
 
-
+	
+	bool show_demo_window = true;
+	glfwSetCursorPosCallback(window, mouse_callback);
 
 
 	auto t1 = Clock::now();
 	while (!glfwWindowShouldClose(window)) {
-		glfwSetCursorPosCallback(window, mouse_callback);
+
+		//float ratio;
+		//int width, height;
+
+		//glfwGetFramebufferSize(window, &width, &height);
+		//ratio = width / (float)height;
+		//glViewport(0, 0, width, height);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		// //Tell OpenGL a new frame is about to begin
+		//ImGui_ImplOpenGL3_NewFrame();
+		//ImGui_ImplGlfw_NewFrame();
+		//ImGui::NewFrame();
+
+		//{
+		//	static float f = 0.0f;
+
+		//	// ImGUI window creation
+		//	ImGui::Begin("My name is window, ImGUI window");
+		//	// Text that appears in the window
+		//	ImGui::Text("Hello there adventurer!");
+		//	//Checkbox that appears in the window
+		//	ImGui::Checkbox("Draw Triangle", &show_demo_window);
+		//	//Slider that appears in the window
+		//	ImGui::SliderFloat("Size", &f, 0.5f, 2.0f);
+		//	//Fancy color editor that appears in the window
+		//   //ImGui::ColorEdit4("Color", color);
+		//   // Ends the window
+		//	ImGui::End();
+		//}
+		//	
+		//	ImGui::Render();
+		//	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		//glfwSwapBuffers(window);
+		////listen for glfw input events
+		//glfwPollEvents();
+
+
+		//glfwGetCursorPos(window, &mouse_x, &mouse_y);
+		ImGuiIO& io = ImGui::GetIO();
+		io.MousePos = ImVec2((float)lastX, (float)lastY);
+
+
+		if (io.WantCaptureMouse)
+		{
+
+		}
+		if (!io.WantCaptureMouse)
+		{
+
+		}
+
 
 
 		//for FPS
@@ -402,18 +529,20 @@ void Runner::run()
 				//std::cout << glm::to_string(position) << std::endl;
 			}
 			if (glfwGetKey(window, GLFW_KEY_P)) {
-				GaneshaObjData.attrib.vertices.clear();
-				GaneshaObjData.attrib.normals.clear();
-				GaneshaObjData.attrib.texcoords.clear();
-				GaneshaObjData.shapes.clear();
-				GaneshaObjData.materials.clear();
-				for (auto& texture : GaneshaObjData.textures) {
+				scene1Loader.unload();
+				/*SwordObjData.attrib.vertices.clear();
+				SwordObjData.attrib.normals.clear();
+				SwordObjData.attrib.texcoords.clear();
+				SwordObjData.shapes.clear();
+				SwordObjData.materials.clear();
+				for (auto& texture : SwordObjData.textures) {
 					glDeleteTextures(1, &texture.second);
 				}
-				GaneshaObjData.textures.clear();
-				glDeleteVertexArrays(1, &GaneshaObjData.vaoId);
-				//UNLOADING DATA
-				scene1Loader.finishLoad = false;
+				SwordObjData.textures.clear();*/
+			/*	glDeleteVertexArrays(1, &SwordObjData.vaoId);
+				std::cout << SwordObjData.vaoId << std::endl;*/
+				////UNLOADING DATA
+				//scene1Loader.finishLoad = false;
 				once = false;
 				//SceneManager::getInstance()->run();
 
@@ -463,6 +592,12 @@ void Runner::run()
 #pragma endregion
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		// Tell OpenGL a new frame is about to begin
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();/**/
+
 #pragma region Draw
 		//--- start drawing here ---
 
@@ -472,169 +607,127 @@ void Runner::run()
 		glUniform1i(multiTex, false);
 		//std::this_thread::sleep_for(std::chrono::milliseconds(9000));
 
-		//if (scene1Loader.finishLoad == true && once == false)
-		//{
-		//	once = true;
-		//	/*LoadObjToMemory_(&GaneshaObjData, 5.0f, bunnyOffset, texture, multiTexture, 3);
-		//	LoadObjToMemory_(&SwordObjData, 5.0f, bunnyOffset, texture, multiTexture, 5);*/
-		//	std::cout << "checl" << std::endl;
-		//	for (int i = 0; i < scene1.size(); i++) {
-		//		LoadObjToMemory_(scene1[i].first, 5.0f, bunnyOffset, texture, multiTexture, i);
 
-		//	}
-
-		//}
-
-		for (int i = 0; i < scene2.size(); i++) {
-			if (scene2[i].first->finish && scene2[i].first->loadedToMem == false)
+		for (int i = 0; i < scene1.size(); i++) {
+			if (scene1[i].first->finish && scene1[i].first->loadedToMem == false)
 			{
-				LoadObjToMemory_(scene2[i].first, 5.0f, bunnyOffset, texture, multiTexture, i);
-				scene2[i].first->loadedToMem = true;
+				LoadObjToMemory_(scene1[i].first, 5.0f, bunnyOffset, texture, multiTexture, i);
+				scene1[i].first->loadedToMem = true;
 			}
 
 		}
 
 		for (int i = 0; i < scene2.size(); i++) {
+			if (scene2[i].first->finish && scene2[i].first->loadedToMem == false)
+			{
+				LoadObjToMemory_(scene2[i].first, 5.0f, bunnyOffset, textures2, multiTexture, i);
+				scene2[i].first->loadedToMem = true;
+			}
+
+		}
+		for (int i = 0; i < scene3.size(); i++) {
+			if (scene3[i].first->finish && scene3[i].first->loadedToMem == false)
+			{
+				LoadObjToMemory_(scene3[i].first, 5.0f, bunnyOffset, textures3, multiTexture, i);
+				scene3[i].first->loadedToMem = true;
+			}
+
+		}
+		for (int i = 0; i < scene4.size(); i++) {
+			if (scene4[i].first->finish && scene4[i].first->loadedToMem == false)
+			{
+				LoadObjToMemory_(scene4[i].first, 5.0f, bunnyOffset, textures4, multiTexture, i);
+				scene4[i].first->loadedToMem = true;
+			}
+
+		}
+		for (int i = 0; i < scene5.size(); i++) {
+			if (scene5[i].first->finish && scene5[i].first->loadedToMem == false)
+			{
+				LoadObjToMemory_(scene5[i].first, 5.0f, bunnyOffset, textures5, multiTexture, i);
+				scene5[i].first->loadedToMem = true;
+			}
+
+		}
+
+		
+		for (int i = 0; i < scene1.size(); i++) {
+			if (glIsVertexArray(scene1[i].first->vaoId) == GL_TRUE)
+			{
+				glBindVertexArray(scene1[i].first->vaoId);
+				glBindTexture(GL_TEXTURE_2D, texture[i]);
+				glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
+				glDrawElements(GL_TRIANGLES, scene1[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+			}
+			
+		}
+
+		for (int i = 0; i < scene2.size(); i++) {
 			glBindVertexArray(scene2[i].first->vaoId);
-			glBindTexture(GL_TEXTURE_2D, texture[i]);
+			glBindTexture(GL_TEXTURE_2D, textures2[i]);
 			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
 			glDrawElements(GL_TRIANGLES, scene2[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
 		}
 
 
-		/*glBindVertexArray(GaneshaObjData.vaoId);
-		glBindTexture(GL_TEXTURE_2D, texture[0]);
-		glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
-		glDrawElements(GL_TRIANGLES, GaneshaObjData.numFaces, GL_UNSIGNED_INT, (void*)0);
+		
+
+		for (int i = 0; i < scene3.size(); i++) {
+			glBindVertexArray(scene3[i].first->vaoId);
+			glBindTexture(GL_TEXTURE_2D, textures3[i]);
+			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
+			glDrawElements(GL_TRIANGLES, scene3[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+		}
+
+		for (int i = 0; i < scene4.size(); i++) {
+			glBindVertexArray(scene4[i].first->vaoId);
+			glBindTexture(GL_TEXTURE_2D, textures4[i]);
+			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
+			glDrawElements(GL_TRIANGLES, scene4[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+		}
 
 
+		for (int i = 0; i < scene5.size(); i++) {
+			glBindVertexArray(scene5[i].first->vaoId);
+			glBindTexture(GL_TEXTURE_2D, textures5[i]);
+			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
+			glDrawElements(GL_TRIANGLES, scene5[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+		}
 
-		glBindVertexArray(SwordObjData.vaoId);
-		glBindTexture(GL_TEXTURE_2D, texture[1]);
-		glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transSword));
-		glDrawElements(GL_TRIANGLES, SwordObjData.numFaces, GL_UNSIGNED_INT, (void*)0);*/
-
-		//glBindVertexArray(SkullObjData.vaoId);
-		//glBindTexture(GL_TEXTURE_2D, texture[4]);
-		//glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transSkull));
-		//glDrawElements(GL_TRIANGLES, SkullObjData.numFaces, GL_UNSIGNED_INT, (void*)0);
-
-
-		//glBindVertexArray(PedestalObjData.vaoId);
-		//glBindTexture(GL_TEXTURE_2D, texture[6]);
-		//glActiveTexture(GL_TEXTURE1);
-		//glBindTexture(GL_TEXTURE_2D, multiTexture[7]);
-
-
-		//for (int i = 0; i < 3; i++) {
-		//	glm::mat4 dupe = transPedestal;
-		//	dupe = glm::translate(dupe, glm::vec3(i * 100.0f, 0.0f, 0.0f));
-		//	dupe = glm::scale(dupe, glm::vec3(0.2f, 0.2f, 0.2f));//scale
-		//	dupe = glm::rotate(dupe, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		//	if (i == 1)
-		//		glUniform1i(multiTex, false);
-		//	else
-		//		glUniform1i(multiTex, true);
-		//	glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(dupe));
-		//	glDrawElements(GL_TRIANGLES, PedestalObjData.numFaces, GL_UNSIGNED_INT, (void*)0);
+		//{
+		//	static float f = 0.0f;
+		//	
+		//	// ImGUI window creation
+		//	ImGui::Begin("My name is window, ImGUI window");
+		//	if (ImGui::Button("Load")) {
+		//		load(); // Call the load function
+		//	}
+		//	if (ImGui::Button("Unload")) {
+		//		unload(); // Call the load function
+		//	}
+		//	if (ImGui::Button("view")) {
+		//		this->view(); // Call the load function
+		//	}
+		//	if (ImGui::Button("All")) {
+		//		renderAll(); // Call the load function
+		//	}
+		//	// Text that appears in the window
+		//	ImGui::Text("Hello there adventurer!");
+		//	//Checkbox that appears in the window
+		//	ImGui::Checkbox("Draw Triangle", &show_demo_window);
+		//	//Slider that appears in the window
+		//	ImGui::SliderFloat("Size", &f, 0.5f, 2.0f);
+		//	//Fancy color editor that appears in the window
+		//   //ImGui::ColorEdit4("Color", color);
+		//   // Ends the window
+		//	ImGui::End();
 		//}
 
+		renderAll(scene1Loader); // Call the load function
 
-		//glUniform1i(multiTex, true);
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		//glBindVertexArray(FloorObjData.vaoId);
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, texture[7]);
-		//glActiveTexture(GL_TEXTURE1);
-		//glBindTexture(GL_TEXTURE_2D, multiTexture[7]);
-
-
-		//for (int i = 0; i < 6; i++) {
-		//	for (int j = 0; j < 6; j++) {
-
-		//		glm::mat4 dupe = transFloor;
-		//		dupe = glm::translate(dupe, glm::vec3(i * 100.0f, -85.0f, j * 100.0f));
-		//		dupe = glm::translate(dupe, glm::vec3(-100.0f, 0.0f, 0.0f));
-		//		dupe = glm::scale(dupe, glm::vec3(2.2f, 2.2f, 2.2f));//scale
-		//		glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(dupe));
-		//		glDrawElements(GL_TRIANGLES, FloorObjData.numFaces, GL_UNSIGNED_INT, (void*)0);
-		//	}
-
-		//}
-		//glUniform1i(multiTex, false);
-
-		//for (int i = 0; i < 4; i++) {
-		//	for (int j = 0; j < 4; j++) {//ceiling
-
-		//		glm::mat4 dupe = transFloor;
-		//		dupe = glm::translate(dupe, glm::vec3(i * 100.0f, 105.0f, j * 100.0f));
-		//		dupe = glm::scale(dupe, glm::vec3(2.2f, 2.2f, 2.2f));//scale
-		//		glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(dupe));
-		//		glDrawElements(GL_TRIANGLES, FloorObjData.numFaces, GL_UNSIGNED_INT, (void*)0);
-		//	}
-		//}
-		//for (int i = 0; i < 4; i++) {
-		//	for (int j = 0; j < 2; j++) {//wall
-
-		//		glm::mat4 dupe = transFloor;
-		//		dupe = glm::translate(dupe, glm::vec3(0.0f, -85.0f, i * 100.0f));
-		//		dupe = glm::translate(dupe, glm::vec3(-48.0f, 48.0f, -2.0f));
-		//		dupe = glm::translate(dupe, glm::vec3(0.0f, j * 100.0f, 0.0f));
-		//		dupe = glm::scale(dupe, glm::vec3(2.2f, 2.2f, 2.2f));//scale
-		//		dupe = glm::rotate(dupe, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		//		glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(dupe));
-		//		glDrawElements(GL_TRIANGLES, FloorObjData.numFaces, GL_UNSIGNED_INT, (void*)0);
-		//	}
-		//	for (int j = 0; j < 2; j++) {//wall
-
-		//		glm::mat4 dupe = transFloor;
-		//		dupe = glm::translate(dupe, glm::vec3(0.0f, -85.0f, i * 100.0f));
-		//		dupe = glm::translate(dupe, glm::vec3(348.0f, 48.0f, -2.0f));
-		//		dupe = glm::translate(dupe, glm::vec3(0.0f, j * 100.0f, 0.0f));
-		//		dupe = glm::scale(dupe, glm::vec3(2.2f, 2.2f, 2.2f));//scale
-		//		dupe = glm::rotate(dupe, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		//		glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(dupe));
-		//		glDrawElements(GL_TRIANGLES, FloorObjData.numFaces, GL_UNSIGNED_INT, (void*)0);
-		//	}
-		//	for (int j = 0; j < 2; j++) {//wall
-
-		//		glm::mat4 dupe = transFloor;
-		//		dupe = glm::translate(dupe, glm::vec3(i * 100.0f, -85.0f, 0.0f));
-		//		dupe = glm::translate(dupe, glm::vec3(0.0f, 44.0f, -48.0f));
-		//		dupe = glm::translate(dupe, glm::vec3(0.0f, j * 100.0f, 0.0f));
-		//		dupe = glm::scale(dupe, glm::vec3(2.2f, 2.2f, 2.2f));//scale
-		//		dupe = glm::rotate(dupe, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		//		glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(dupe));
-		//		glDrawElements(GL_TRIANGLES, FloorObjData.numFaces, GL_UNSIGNED_INT, (void*)0);
-		//	}
-		//	for (int j = 0; j < 2; j++) {//wall
-
-		//		glm::mat4 dupe = transFloor;
-		//		if (i != 1) {
-		//			dupe = glm::translate(dupe, glm::vec3(i * 100.0f, -85.0f, 0.0f));
-		//			dupe = glm::translate(dupe, glm::vec3(0.0f, 44.0f, 350.0f));
-		//			dupe = glm::translate(dupe, glm::vec3(0.0f, j * 100.0f, 0.0f));
-		//			dupe = glm::scale(dupe, glm::vec3(2.2f, 2.2f, 2.2f));//scale
-		//			dupe = glm::rotate(dupe, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		//			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(dupe));
-		//			glDrawElements(GL_TRIANGLES, FloorObjData.numFaces, GL_UNSIGNED_INT, (void*)0);
-		//		}
-		//	}
-
-		//}
-
-
-
-		//threads[0]->run();
-		//SceneManager::getInstance()->loader->run();
-		//loader->run();
-
-
-		//SceneManager::getInstance()->loader->run();
-		/*if (loader->finishLoad)
-		{
-			loader->run();
-		}*/
 		
 			//--- stop drawing here ---
 #pragma endregion
@@ -644,6 +737,10 @@ void Runner::run()
 		glfwPollEvents();
 	}
 
+	// Deletes all ImGUI instances
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	return;
 }
 //
@@ -773,84 +870,79 @@ void Runner::LoadObjFile_(ObjData* objData, std::string filename)
 void Runner::LoadObjToMemory_(ObjData* objData, GLfloat scaleFactor, GLfloat tOffset[], GLuint* texture,
 	GLuint* texture2, int num)
 {
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> orderedVertices;
-	std::vector<GLuint> indices;
-	std::vector<VertexData> vertexList;
+
+	//for (int i = 0; i < objData->attrib.vertices.size() / 3; i++) {
+	//	vertices.push_back({ objData->attrib.vertices[i * 3] * scaleFactor + tOffset[0],
+	//						objData->attrib.vertices[i * 3 + 1] * scaleFactor + tOffset[1],
+	//						objData->attrib.vertices[i * 3 + 2] * scaleFactor + tOffset[2]
+	//		});
+	//}
+
+	//for (int i = 0; i < objData->shapes.size(); i++) {
+	//	tinyobj::shape_t shape = objData->shapes[i];
+	//	for (int j = 0; j < shape.mesh.indices.size(); j++) {
+	//		tinyobj::index_t idx = shape.mesh.indices[j];
+
+	//		VertexData vertexData;
+
+	//		vertexData.position = {
+	//			objData->attrib.vertices[size_t(idx.vertex_index) * 3] * scaleFactor + tOffset[0],// x
+	//			objData->attrib.vertices[size_t(idx.vertex_index) * 3 + 1] * scaleFactor + tOffset[1],// y
+	//			objData->attrib.vertices[size_t(idx.vertex_index) * 3 + 2] * scaleFactor + tOffset[2]// z
+	//		};
+
+	//		if (idx.texcoord_index >= 0) {
+	//			vertexData.UV = {
+	//				objData->attrib.texcoords[size_t(idx.texcoord_index) * 2 + 0],
+	//				objData->attrib.texcoords[size_t(idx.texcoord_index) * 2 + 1]
+	//			};
+	//			vertexData.UV.y = 1 - vertexData.UV.y;
+	//		}
+
+	//		if (idx.normal_index >= 0) {
+	//			vertexData.normal = {
+	//			objData->attrib.normals[size_t(idx.normal_index) * 3 + 0],
+	//			objData->attrib.normals[size_t(idx.normal_index) * 3 + 1],
+	//			objData->attrib.normals[size_t(idx.normal_index) * 3 + 2],
+	//			};
+	//		}
+	//		vertexList.push_back(vertexData);
+	//		indices.push_back(indices.size());
+
+	//		/*
+	//		GLuint idx = shape.mesh.indices[j].vertex_index;
+	//		indices.push_back(idx);*/
+	//		//orderedVertices.push_back(vertices[idx]);
+	//	}
+	//}
+	//objData->numFaces = indices.size();
+
+	//	//for flat shading if it doesnt have normals or smthn
+	//if (objData->attrib.normals.size() == 0) {
+	//	for (int i = 0; i < vertexList.size() / 3; i++) {
+	//		int idx = i * 3;
+	//		glm::vec3 normal = glm::normalize(glm::cross(vertexList[idx + 1].position - vertexList[idx].position, vertexList[idx + 2].position - vertexList[idx].position));
+	//		vertexList[idx].normal = normal;
+	//		vertexList[idx + 1].normal = normal;
+	//		vertexList[idx + 2].normal = normal;
+	//	}
+	//}
 
 
-	for (int i = 0; i < objData->attrib.vertices.size() / 3; i++) {
-		vertices.push_back({ objData->attrib.vertices[i * 3] * scaleFactor + tOffset[0],
-							objData->attrib.vertices[i * 3 + 1] * scaleFactor + tOffset[1],
-							objData->attrib.vertices[i * 3 + 2] * scaleFactor + tOffset[2]
-			});
-	}
-
-	for (int i = 0; i < objData->shapes.size(); i++) {
-		tinyobj::shape_t shape = objData->shapes[i];
-		for (int j = 0; j < shape.mesh.indices.size(); j++) {
-			tinyobj::index_t idx = shape.mesh.indices[j];
-
-			VertexData vertexData;
-
-			vertexData.position = {
-				objData->attrib.vertices[size_t(idx.vertex_index) * 3] * scaleFactor + tOffset[0],// x
-				objData->attrib.vertices[size_t(idx.vertex_index) * 3 + 1] * scaleFactor + tOffset[1],// y
-				objData->attrib.vertices[size_t(idx.vertex_index) * 3 + 2] * scaleFactor + tOffset[2]// z
-			};
-
-			if (idx.texcoord_index >= 0) {
-				vertexData.UV = {
-					objData->attrib.texcoords[size_t(idx.texcoord_index) * 2 + 0],
-					objData->attrib.texcoords[size_t(idx.texcoord_index) * 2 + 1]
-				};
-				vertexData.UV.y = 1 - vertexData.UV.y;
-			}
-
-			if (idx.normal_index >= 0) {
-				vertexData.normal = {
-				objData->attrib.normals[size_t(idx.normal_index) * 3 + 0],
-				objData->attrib.normals[size_t(idx.normal_index) * 3 + 1],
-				objData->attrib.normals[size_t(idx.normal_index) * 3 + 2],
-				};
-			}
-			vertexList.push_back(vertexData);
-			indices.push_back(indices.size());
-
-			/*
-			GLuint idx = shape.mesh.indices[j].vertex_index;
-			indices.push_back(idx);*/
-			//orderedVertices.push_back(vertices[idx]);
-		}
-	}
-	objData->numFaces = indices.size();
-
-		//for flat shading if it doesnt have normals or smthn
-	if (objData->attrib.normals.size() == 0) {
-		for (int i = 0; i < vertexList.size() / 3; i++) {
-			int idx = i * 3;
-			glm::vec3 normal = glm::normalize(glm::cross(vertexList[idx + 1].position - vertexList[idx].position, vertexList[idx + 2].position - vertexList[idx].position));
-			vertexList[idx].normal = normal;
-			vertexList[idx + 1].normal = normal;
-			vertexList[idx + 2].normal = normal;
-		}
-	}
-
-
-	//BUNNY
+	////BUNNY
 	GLuint BVAO, BVBO, BEBO;
 	glGenVertexArrays(1, &BVAO);
 	glBindVertexArray(BVAO);
 
 	glGenBuffers(1, &BVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, BVBO);
-	glBufferData(GL_ARRAY_BUFFER, vertexList.size() * sizeof(VertexData), &vertexList[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objData->vertexList.size() * sizeof(VertexData), &objData->vertexList[0], GL_STATIC_DRAW);
 
 	glGenBuffers(1, &BEBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, BEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		indices.size() * sizeof(GLuint),
-		&indices[0],
+		objData->indices.size() * sizeof(GLuint),
+		&objData->indices[0],
 		GL_STATIC_DRAW
 	);
 
@@ -901,4 +993,93 @@ void Runner::processEvents()
 
 void Runner::update()
 {
+}
+
+void Runner::load()
+{
+	std::cout << "loading" << std::endl;
+}
+
+void Runner::unload()
+{
+	std::cout << "unloading" << std::endl;
+
+}
+
+void Runner::view()
+{
+	std::cout << "viewing" << std::endl;
+
+}
+
+void Runner::renderAll(objLoader scene1Loader)
+{
+	ImGui::Begin("My name is window, ImGUI window");
+
+	ImGui::Text("SCENE 1");
+	if (ImGui::Button("Load")) {
+		load(); // Call the load function
+	}
+	if (ImGui::Button("Unload")) {
+		scene1Loader.unload();
+		unload(); // Call the load function
+	}
+
+	ImGui::Checkbox("View", &this->view1);
+
+	ImGui::Text("SCENE 2");
+	if (ImGui::Button("Load")) {
+		load(); // Call the load function
+	}
+	if (ImGui::Button("Unload")) {
+		unload(); // Call the load function
+	}
+
+	ImGui::Checkbox("View", &this->view1);
+
+	ImGui::Text("SCENE 3");
+	if (ImGui::Button("Load")) {
+		load(); // Call the load function
+	}
+	if (ImGui::Button("Unload")) {
+		unload(); // Call the load function
+	}
+
+	ImGui::Checkbox("View", &this->view1);
+
+	ImGui::Text("SCENE 4");
+	if (ImGui::Button("Load")) {
+		load(); // Call the load function
+	}
+	if (ImGui::Button("Unload")) {
+		unload(); // Call the load function
+	}
+
+	ImGui::Checkbox("View", &this->view1);
+
+	ImGui::Text("SCENE 5");
+	if (ImGui::Button("Load")) {
+		load(); // Call the load function
+	}
+	if (ImGui::Button("Unload")) {
+		unload(); // Call the load function
+	}
+
+	ImGui::Checkbox("View", &this->view1);
+
+
+
+
+	if (ImGui::Button("All")) {
+	}
+	// Text that appears in the window
+	ImGui::Text("Hello there adventurer!");
+	//Checkbox that appears in the window
+	//Slider that appears in the window
+	//Fancy color editor that appears in the window
+   //ImGui::ColorEdit4("Color", color);
+   // Ends the window
+	ImGui::End();
+	//std::cout << "all " << std::endl;
+
 }

@@ -3,9 +3,10 @@
 
 #include "Runner.h"
 
+
 int main() {
 
-	Runner run;
+	//Runner run;
 
 	Runner runner;
 	runner.run();
