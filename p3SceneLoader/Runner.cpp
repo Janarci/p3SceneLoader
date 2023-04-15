@@ -168,7 +168,11 @@ Runner::Runner()
 	glGenTextures(8, textures3);
 	glGenTextures(8, textures4);
 	glGenTextures(8, textures5);
-	glGenTextures(8, multiTexture);
+	glGenTextures(8, multiTexture1);
+	glGenTextures(8, multiTexture2);
+	glGenTextures(8, multiTexture3);
+	glGenTextures(8, multiTexture4);
+	glGenTextures(8, multiTexture5);
 
 	
 #pragma region object
@@ -317,6 +321,7 @@ Runner::Runner()
 	double xpos = 0.0f, ypos = 0.0f;
 #pragma endregion
 
+#pragma region view
 
 	// set bg color to green  
 	glClearColor(0.3f, 0.3f, 0.3f, 0.3f);
@@ -335,42 +340,36 @@ Runner::Runner()
 
 	glEnable(GL_DEPTH_TEST);
 
+#pragma endregion
+
+
 	std::string str1 = "models/obj1/";
 	std::string str2 = "models/obj2/";
 
 	// add pairs to the vector
 	//scene1.push_back(std::make_pair(&GaneshaObjData, "Ganesha/Ganesha.obj"));
 
-	scene1.push_back(std::make_pair(&SwordObjData, "Sword/moonlight.obj"));
+	//scene1.push_back(std::make_pair(&SwordObjData, "Sword/moonlight.obj"));
 
-
-
-
-
-	/*scene1.push_back(std::make_pair(obj2, "models/obj2/"));
-	for (int i = 0; i < scene1.size(); i++) {
-		std::cout << "Pair " << i << ":" << std::endl;
-		std::cout << "  ObjData: [do something with myVector[" << i << "].first]" << std::endl;
-		std::cout << "  String: " << scene1[i].second << std::endl;
-	}*/
 }
 
 void Runner::run()
 {
 	//put 3d models in the scene
-	ObjData backpacks2, crates2, skulls2;
 
+
+	ObjData sword1, crates1, backpacks1;
+	scene1.push_back(std::make_pair(&sword1, "Sword/moonlight.obj"));
+	scene1.push_back(std::make_pair(&crates1, "crate/Crate1.obj"));
+	scene1.push_back(std::make_pair(&backpacks1, "backpack/backpack.obj"));
+
+	ObjData backpacks2, crates2, skulls2;
 	scene2.push_back(std::make_pair(&skulls2, "Skull/Skull.obj"));
 	scene2.push_back(std::make_pair(&backpacks2, "backpack/backpack.obj"));
-	//scene2.push_back(std::make_pair(&pedestal, "pedestal/10421_square_pedastal_iterations-2.obj"));
-	//scene2.push_back(std::make_pair(&obj3, "earth/Earth.obj"));
 	scene2.push_back(std::make_pair(&crates2, "crate/Crate1.obj"));
-	//scene2.push_back(std::make_pair(&obj3, "bunny.obj"));
-	//scene2.push_back(std::make_pair(&obj4, "teacup.obj"));
 
-	
-	ObjData earths3, ganeshas3, teapots4;
-	//scene3.push_back(std::make_pair(&ganeshas3, "Ganesha/Ganesha.obj"));
+	ObjData earths3, skulls3, teapots4;
+	scene3.push_back(std::make_pair(&skulls3, "Skull/Skull.obj"));
 	scene3.push_back(std::make_pair(&earths3, "earth/Earth.obj"));
 	scene3.push_back(std::make_pair(&teapots4, "teacup.obj"));
 
@@ -382,29 +381,25 @@ void Runner::run()
 
 	ObjData earths5, ganeshas5, swords5;
 	scene5.push_back(std::make_pair(&earths5, "earth/Earth.obj"));
-	//scene5.push_back(std::make_pair(&swords5, "Sword/moonlight.obj"));
+	scene5.push_back(std::make_pair(&swords5, "Sword/moonlight.obj"));
 	scene5.push_back(std::make_pair(&ganeshas5, "Ganesha/Ganesha.obj"));
 
 
-
-
 	//start the threads
-	objLoader scene1Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene1, running);
+	objLoader scene1Loader( 1, scene1, running);
 	scene1Loader.start();
 
-	objLoader scene2Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene2, running);
+	objLoader scene2Loader(2, scene2, running);
 	scene2Loader.start();
 
-	objLoader scene3Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene3, running);
+	objLoader scene3Loader(3, scene3, running);
 	scene3Loader.start();
 
-	objLoader scene4Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene4, running);
+	objLoader scene4Loader(4, scene4, running);
 	scene4Loader.start();
 
-	objLoader scene5Loader(&GaneshaObjData, "Ganesha/Ganesha.obj", scene5, running);
+	objLoader scene5Loader(5, scene5, running);
 	scene5Loader.start();
-
-
 
 	// set bg color to green  
 	glClearColor(0.3f, 0.3f, 0.3f, 0.3f);
@@ -415,7 +410,6 @@ void Runner::run()
 	glm::vec3 position = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 viewDirections = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 Up = glm::vec3(0.0f, 0.0f, -1.0f);
-	//projection = glm::ortho(-40.0f, 120.0f, -40.0f, 120.0f, 0.1f, max_far);
 
 	position = glm::vec3(30.0f, 20.0f, 40.0f);
 	viewDirections = glm::vec3(30.0f, 0.0f, 0.0f);
@@ -430,45 +424,6 @@ void Runner::run()
 
 	auto t1 = Clock::now();
 	while (!glfwWindowShouldClose(window)) {
-
-		//float ratio;
-		//int width, height;
-
-		//glfwGetFramebufferSize(window, &width, &height);
-		//ratio = width / (float)height;
-		//glViewport(0, 0, width, height);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		// //Tell OpenGL a new frame is about to begin
-		//ImGui_ImplOpenGL3_NewFrame();
-		//ImGui_ImplGlfw_NewFrame();
-		//ImGui::NewFrame();
-
-		//{
-		//	static float f = 0.0f;
-
-		//	// ImGUI window creation
-		//	ImGui::Begin("My name is window, ImGUI window");
-		//	// Text that appears in the window
-		//	ImGui::Text("Hello there adventurer!");
-		//	//Checkbox that appears in the window
-		//	ImGui::Checkbox("Draw Triangle", &show_demo_window);
-		//	//Slider that appears in the window
-		//	ImGui::SliderFloat("Size", &f, 0.5f, 2.0f);
-		//	//Fancy color editor that appears in the window
-		//   //ImGui::ColorEdit4("Color", color);
-		//   // Ends the window
-		//	ImGui::End();
-		//}
-		//	
-		//	ImGui::Render();
-		//	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		//glfwSwapBuffers(window);
-		////listen for glfw input events
-		//glfwPollEvents();
-
 
 		//glfwGetCursorPos(window, &mouse_x, &mouse_y);
 		ImGuiIO& io = ImGui::GetIO();
@@ -528,6 +483,11 @@ void Runner::run()
 				position -= walkspeed * Up;
 				//std::cout << glm::to_string(position) << std::endl;
 			}
+			if (glfwGetKey(window, GLFW_KEY_O)) {
+				scene2Loader.unload();
+
+				//std::cout << glm::to_string(position) << std::endl;
+			}
 			if (glfwGetKey(window, GLFW_KEY_P)) {
 				scene1Loader.unload();
 				/*SwordObjData.attrib.vertices.clear();
@@ -547,9 +507,9 @@ void Runner::run()
 				//SceneManager::getInstance()->run();
 
 			}
-			if (position.y < 40.0f || position.y > 40.0f) {
+			/*if (position.y < 40.0f || position.y > 40.0f) {
 				position.y = 40.0f;
-			}
+			}*/
 		}
 
 		float ratio;
@@ -609,42 +569,41 @@ void Runner::run()
 
 
 		for (int i = 0; i < scene1.size(); i++) {
-			if (scene1[i].first->finish && scene1[i].first->loadedToMem == false)
+			if (scene1[i].first->loaded && scene1[i].first->loadedToMem == false)
 			{
-				LoadObjToMemory_(scene1[i].first, 5.0f, bunnyOffset, texture, multiTexture, i);
+				LoadObjToMemory_(scene1[i].first, 5.0f, bunnyOffset, texture, multiTexture1, i);
 				scene1[i].first->loadedToMem = true;
 			}
 
 		}
-
 		for (int i = 0; i < scene2.size(); i++) {
-			if (scene2[i].first->finish && scene2[i].first->loadedToMem == false)
+			if (scene2[i].first->loaded && scene2[i].first->loadedToMem == false)
 			{
-				LoadObjToMemory_(scene2[i].first, 5.0f, bunnyOffset, textures2, multiTexture, i);
+				LoadObjToMemory_(scene2[i].first, 5.0f, bunnyOffset, textures2, multiTexture2, i);
 				scene2[i].first->loadedToMem = true;
 			}
 
 		}
 		for (int i = 0; i < scene3.size(); i++) {
-			if (scene3[i].first->finish && scene3[i].first->loadedToMem == false)
+			if (scene3[i].first->loaded && scene3[i].first->loadedToMem == false)
 			{
-				LoadObjToMemory_(scene3[i].first, 5.0f, bunnyOffset, textures3, multiTexture, i);
+				LoadObjToMemory_(scene3[i].first, 5.0f, bunnyOffset, textures3, multiTexture3, i);
 				scene3[i].first->loadedToMem = true;
 			}
 
 		}
 		for (int i = 0; i < scene4.size(); i++) {
-			if (scene4[i].first->finish && scene4[i].first->loadedToMem == false)
+			if (scene4[i].first->loaded && scene4[i].first->loadedToMem == false)
 			{
-				LoadObjToMemory_(scene4[i].first, 5.0f, bunnyOffset, textures4, multiTexture, i);
+				LoadObjToMemory_(scene4[i].first, 5.0f, bunnyOffset, textures4, multiTexture4, i);
 				scene4[i].first->loadedToMem = true;
 			}
 
 		}
 		for (int i = 0; i < scene5.size(); i++) {
-			if (scene5[i].first->finish && scene5[i].first->loadedToMem == false)
+			if (scene5[i].first->loaded && scene5[i].first->loadedToMem == false)
 			{
-				LoadObjToMemory_(scene5[i].first, 5.0f, bunnyOffset, textures5, multiTexture, i);
+				LoadObjToMemory_(scene5[i].first, 5.0f, bunnyOffset, textures5, multiTexture5, i);
 				scene5[i].first->loadedToMem = true;
 			}
 
@@ -652,46 +611,53 @@ void Runner::run()
 
 		
 		for (int i = 0; i < scene1.size(); i++) {
-			if (glIsVertexArray(scene1[i].first->vaoId) == GL_TRUE)
+			if (glIsVertexArray(scene1[i].first->vaoId) == GL_TRUE && view1 == true)
 			{
 				glBindVertexArray(scene1[i].first->vaoId);
 				glBindTexture(GL_TEXTURE_2D, texture[i]);
-				glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
+				glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(scene1[i].first->transform));
 				glDrawElements(GL_TRIANGLES, scene1[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
 			}
 			
 		}
-
 		for (int i = 0; i < scene2.size(); i++) {
-			glBindVertexArray(scene2[i].first->vaoId);
-			glBindTexture(GL_TEXTURE_2D, textures2[i]);
-			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
-			glDrawElements(GL_TRIANGLES, scene2[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+			if (glIsVertexArray(scene2[i].first->vaoId) == GL_TRUE && view2 == true)
+			{
+				glBindVertexArray(scene2[i].first->vaoId);
+				glBindTexture(GL_TEXTURE_2D, textures2[i]);
+				glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(scene2[i].first->transform));
+				glDrawElements(GL_TRIANGLES, scene2[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+			}
 		}
 
-
-		
-
 		for (int i = 0; i < scene3.size(); i++) {
-			glBindVertexArray(scene3[i].first->vaoId);
-			glBindTexture(GL_TEXTURE_2D, textures3[i]);
-			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
-			glDrawElements(GL_TRIANGLES, scene3[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+			if (glIsVertexArray(scene3[i].first->vaoId) == GL_TRUE && view3 == true)
+			{
+				glBindVertexArray(scene3[i].first->vaoId);
+				glBindTexture(GL_TEXTURE_2D, textures3[i]);
+				glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(scene3[i].first->transform));
+				glDrawElements(GL_TRIANGLES, scene3[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+			}
 		}
 
 		for (int i = 0; i < scene4.size(); i++) {
-			glBindVertexArray(scene4[i].first->vaoId);
-			glBindTexture(GL_TEXTURE_2D, textures4[i]);
-			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
-			glDrawElements(GL_TRIANGLES, scene4[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+			if (glIsVertexArray(scene4[i].first->vaoId) == GL_TRUE && view4 == true)
+			{
+				glBindVertexArray(scene4[i].first->vaoId);
+				glBindTexture(GL_TEXTURE_2D, textures4[i]);
+				glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(scene4[i].first->transform));
+				glDrawElements(GL_TRIANGLES, scene4[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+			}
 		}
 
-
 		for (int i = 0; i < scene5.size(); i++) {
-			glBindVertexArray(scene5[i].first->vaoId);
-			glBindTexture(GL_TEXTURE_2D, textures5[i]);
-			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(transGanesha));
-			glDrawElements(GL_TRIANGLES, scene5[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+			if (glIsVertexArray(scene5[i].first->vaoId) == GL_TRUE && view5 == true)
+			{
+				glBindVertexArray(scene5[i].first->vaoId);
+				glBindTexture(GL_TEXTURE_2D, textures5[i]);
+				glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(scene5[i].first->transform));
+				glDrawElements(GL_TRIANGLES, scene5[i].first->numFaces, GL_UNSIGNED_INT, (void*)0);
+			}
 		}
 
 		//{
@@ -723,7 +689,7 @@ void Runner::run()
 		//	ImGui::End();
 		//}
 
-		renderAll(scene1Loader); // Call the load function
+		renderAll(&scene1Loader, &scene2Loader, &scene3Loader, &scene4Loader, &scene5Loader); // Call the load function
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -978,8 +944,10 @@ void Runner::LoadObjToMemory_(ObjData* objData, GLfloat scaleFactor, GLfloat tOf
 		(void*)offsetof(VertexData, normal)
 	);
 
-
-	this->LoadTextureData_(objData, texture, texture2, num);
+	if (objData->textures.empty())
+	{
+		this->LoadTextureData_(objData, texture, texture2, num);
+	}
 	objData->vaoId = BVAO;
 }
 
@@ -1012,66 +980,84 @@ void Runner::view()
 
 }
 
-void Runner::renderAll(objLoader scene1Loader)
+void Runner::renderAll(objLoader* scene1Loader, objLoader* scene2Loader, objLoader* scene3Loader, objLoader* scene4Loader, objLoader* scene5Loader)
 {
 	ImGui::Begin("My name is window, ImGUI window");
 
-	ImGui::Text("SCENE 1");
-	if (ImGui::Button("Load")) {
-		load(); // Call the load function
-	}
-	if (ImGui::Button("Unload")) {
-		scene1Loader.unload();
-		unload(); // Call the load function
-	}
 
-	ImGui::Checkbox("View", &this->view1);
-
-	ImGui::Text("SCENE 2");
-	if (ImGui::Button("Load")) {
-		load(); // Call the load function
+	ImGui::Text("SCENE 1: %.2f", scene1Loader->progressPercentage);
+	if (ImGui::Button("Load scene 1")) {
+		scene1Loader->LoadBtn = true;
 	}
-	if (ImGui::Button("Unload")) {
-		unload(); // Call the load function
+	if (ImGui::Button("Unload scene 1")) {
+		scene1Loader->UnloadBtn = true;
+		scene1Loader->unloadVAO();
+		
 	}
 
-	ImGui::Checkbox("View", &this->view1);
+	ImGui::Checkbox("View scene 1", &this->view1);
 
-	ImGui::Text("SCENE 3");
-	if (ImGui::Button("Load")) {
-		load(); // Call the load function
+	ImGui::Text("SCENE 2: %.2f", scene2Loader->progressPercentage);
+	if (ImGui::Button("Load scene 2")) {
+		scene2Loader->LoadBtn = true;
 	}
-	if (ImGui::Button("Unload")) {
-		unload(); // Call the load function
-	}
-
-	ImGui::Checkbox("View", &this->view1);
-
-	ImGui::Text("SCENE 4");
-	if (ImGui::Button("Load")) {
-		load(); // Call the load function
-	}
-	if (ImGui::Button("Unload")) {
-		unload(); // Call the load function
+	if (ImGui::Button("Unload scene 2")) {
+		scene2Loader->UnloadBtn = true;
+		scene2Loader->unloadVAO();
+		
 	}
 
-	ImGui::Checkbox("View", &this->view1);
+	ImGui::Checkbox("View scene 2", &this->view2);
 
-	ImGui::Text("SCENE 5");
-	if (ImGui::Button("Load")) {
-		load(); // Call the load function
+	ImGui::Text("SCENE 3: %.2f", scene3Loader->progressPercentage);
+	if (ImGui::Button("Load scene 3")) {
+		scene3Loader->LoadBtn = true;
 	}
-	if (ImGui::Button("Unload")) {
-		unload(); // Call the load function
+	if (ImGui::Button("Unload scene 3")) {
+		scene3Loader->UnloadBtn = true;
+		scene3Loader->unloadVAO();
+		
 	}
 
-	ImGui::Checkbox("View", &this->view1);
+	ImGui::Checkbox("View scene 3", &this->view3);
 
-
-
-
-	if (ImGui::Button("All")) {
+	ImGui::Text("SCENE 4: %.2f", scene4Loader->progressPercentage);
+	if (ImGui::Button("Load scene 4")) {
+		scene4Loader->LoadBtn = true;
 	}
+	if (ImGui::Button("Unload scene 4")) {
+		scene4Loader->UnloadBtn = true;
+		scene4Loader->unloadVAO();
+		
+
+	}
+
+	ImGui::Checkbox("View scene 4", &this->view4);
+
+	ImGui::Text("SCENE 5: %.2f", scene5Loader->progressPercentage);
+	if (ImGui::Button("Load scene 5")) {
+		scene5Loader->LoadBtn = true;
+	}
+	if (ImGui::Button("Unload scene 5")) {
+		scene5Loader->UnloadBtn = true;
+		scene5Loader->unloadVAO();
+		
+	}
+
+	ImGui::Checkbox("View scene 5", &this->view5);
+
+
+
+
+	if (ImGui::Button("View All")) {
+		this->view1 = true;
+		this->view2 = true;
+		this->view3 = true;
+		this->view4 = true;
+		this->view5 = true;
+	}
+
+
 	// Text that appears in the window
 	ImGui::Text("Hello there adventurer!");
 	//Checkbox that appears in the window

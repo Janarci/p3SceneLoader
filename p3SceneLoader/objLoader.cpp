@@ -1,37 +1,39 @@
 ﻿#include "objLoader.h"
 
+#include <random>
 
 
 #include "structs.h"
 #include "stb_image.h"
 
 
-objLoader::objLoader(ObjData* model, std::string filename, std::vector<std::pair<ObjData*, std::string>>& scene, Semaphores* mutexSem)
+objLoader::objLoader( int id, std::vector<std::pair<ObjData*, std::string>>& scene, Semaphores* mutexSem)
 {
-	this->Model = model;
-	this->filename = filename;
+	this->id = id;
 	this->scene = scene;
 	this->mutexSem = mutexSem;
 }
 
 void objLoader::run()
 {
+	load();
 
-	//LoadObjFile_(Model, filename);
+	while(true)
+	{
+		if (LoadBtn == true)
+		{
+			load();
+			LoadBtn = false;
 
-
-	for (int i = 0; i < scene.size(); i++) {
-		mutexSem->acquire();
-		this->sleep(3000);
-		LoadObjFile_(scene[i].first, scene[i].second);
-		mutexSem->release();
+		}
+		else if (UnloadBtn == true)
+		{
+			unload();
+			UnloadBtn = false;
+		}
 
 	}
 
-
-
-	/*LoadObjFile_(&scene[0].first, scene[0].second);*/
-	finishLoad = true;
 }
 
 std::string objLoader::GetBaseDir_(const std::string& filepath)
@@ -141,9 +143,9 @@ void objLoader::LoadObjFile_(ObjData* objData, std::string filename)
 	objData->indices = indices;
 	objData->vertexList = vertexList;
 
+	objData->transform = randomTransfom();
 
-
-	objData->finish = true;
+	objData->loaded = true;
 
 	std::cout << "loaded " << filename << std::endl;
 }
@@ -151,23 +153,97 @@ void objLoader::LoadObjFile_(ObjData* objData, std::string filename)
 
 void objLoader::unload()
 {
+	//loading->acquire();
+	if (finishLoad == false)
+	{
 
+		return;
+	}
 	for (int i = 0; i < scene.size(); i++) {
 		std::cout <<"delete: "<< scene[i].first->baseDir << std::endl;
+		//glDeleteVertexArrays(1, &scene[i].first->vaoId);
+		//unloadVAO();
+
 		scene[i].first->attrib.vertices.clear();
 		scene[i].first->attrib.normals.clear();
 		scene[i].first->attrib.texcoords.clear();
 		scene[i].first->shapes.clear();
 		scene[i].first->materials.clear();
+		scene[i].first->indices.clear();
+		scene[i].first->vertexList.clear();
+
 		for (auto& texture : scene[i].first->textures) {
 			glDeleteTextures(1, &texture.second);
 		}
 		scene[i].first->textures.clear();
-		glDeleteVertexArrays(1, &scene[i].first->vaoId);
 		//UNLOADING DATA
-		this->finishLoad = false;
+		scene[i].first->loaded = false;
+		scene[i].first->loadedToMem = false;
 
 	}
+	this->progressPercentage = 0;
+	this->finishLoad = false;
+	//loading->release();
+
+}
+
+void objLoader::unloadVAO()
+{
+	if (finishLoad == false)
+	{
+
+		return;
+	}
+	for (int i = 0; i < scene.size(); i++) {
+		std::cout << "delete VAO: " << scene[i].first->baseDir << std::endl;
+
+		glDeleteVertexArrays(1, &scene[i].first->vaoId);
+
+	}
+}
+
+
+void objLoader::load()
+{
+	if (finishLoad == true)
+	{
+		return;
+	}
+
+	for (int i = 0; i < scene.size(); i++) {
+		this->sleep(5000);
+
+		mutexSem->acquire();
+		LoadObjFile_(scene[i].first, scene[i].second);
+		progressPercentage = (float)(i + 1) / (float)scene.size() * 100.0f;
+		mutexSem->release();
+
+	}
+	std::cout << id << std::endl;
+
+	finishLoad = true;
+
+}
+
+glm::mat4 objLoader::randomTransfom()
+{
+	static std::mt19937 rng(std::random_device{}());
+	static uniform_real_distribution<float> dist(0.0f, 4.0f);
+	static uniform_real_distribution<float> transdist(-10.0f, 10.0f);
+	static uniform_real_distribution<float> scaledist(-10.0f, 10.0f);
+
+	glm::vec3 translation(transdist(rng), transdist(rng), transdist(rng));
+	glm::vec3 rotation(dist(rng), dist(rng), dist(rng));
+	glm::vec3 scale(scaledist(rng), scaledist(rng), scaledist(rng));
+
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, translation);
+	model = glm::rotate(model, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, scale);
+
+	return model;
 }
 
 void objLoader::render()

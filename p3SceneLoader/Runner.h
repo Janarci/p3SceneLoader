@@ -27,7 +27,11 @@ public:
 	GLuint textures3[8];
 	GLuint textures4[8];
 	GLuint textures5[8];
-	GLuint multiTexture[8];
+	GLuint multiTexture1[8];
+	GLuint multiTexture2[8];
+	GLuint multiTexture3[8];
+	GLuint multiTexture4[8];
+	GLuint multiTexture5[8];
 
 	bool once = false;
 	std::string GetBaseDir_(const std::string& filepath);
@@ -51,15 +55,17 @@ public:
 	ObjData SunObjData;
 	ObjData SkullObjData;
 
-	Semaphores* mutexS1 = new Semaphores(1);
-	Semaphores* mutexS2= new Semaphores(1);
-	Semaphores* mutexS3 = new Semaphores(1);
-	Semaphores* mutexS4 = new Semaphores(1);
 	Semaphores* unloading = new Semaphores(1);
-	Semaphores* running = new Semaphores(3);
+
+
+	Semaphores* running = new Semaphores(2);
 
 private:
-	bool view1;
+	bool view1 = false;
+	bool view2 = false;
+	bool view3 = false;
+	bool view4 = false;
+	bool view5 = false;
 	void render();
 	void processEvents();
 	void update();
@@ -67,7 +73,7 @@ private:
 	void load();
 	void unload();
 	void view();
-	void renderAll(objLoader scene1Loader);
+	void renderAll(objLoader* scene1Loader, objLoader* scene2Loader, objLoader* scene3Loader, objLoader* scene4Loader, objLoader* scene5Loader);
 	
 
 };

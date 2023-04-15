@@ -30,7 +30,8 @@ struct ObjData {
 	std::map<std::string, GLuint> textures;
 	std::vector<GLuint> indices;
 	std::vector<VertexData> vertexList;
-	bool finish = false;
+	glm::mat4 transform;
+	bool loaded = false;
 	bool loadedToMem = false;
 };
 
@@ -38,10 +39,12 @@ class objLoader : public IETThread
 {
 public:
 
-	objLoader(ObjData* model, std::string filename, std::vector<std::pair<ObjData*, std::string>>& scene, Semaphores* mutexSem);
+	objLoader(int id, std::vector<std::pair<ObjData*, std::string>>& scene, Semaphores* mutexSem);
 	void run() override;
 
 	void unload();
+	void unloadVAO();
+	void load();
 
 	std::string GetBaseDir_(const std::string& filepath);
 	void LoadObjFile_(ObjData* objData, std::string filename);
@@ -56,10 +59,15 @@ public:
 	GLuint multiTexture[8];
 
 	bool finishLoad = false;
+	bool LoadBtn = false;
+	bool UnloadBtn = false;
+	float progressPercentage;
 
 private:
+	int id;
 	Semaphores* mutexSem;
 
+	glm::mat4 randomTransfom();
 	void render();
 	void processEvents();
 	void update();
