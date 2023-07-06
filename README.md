@@ -1,2 +1,2 @@
-# p3SceneLoader
+# Multithreaded 3D object loader
  
