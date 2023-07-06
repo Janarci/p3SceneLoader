@@ -55,6 +55,11 @@ public:
 	ObjData SunObjData;
 	ObjData SkullObjData;
 
+	Semaphores* mutex1 = new Semaphores(0);
+	Semaphores* mutex2 = new Semaphores(0);
+	Semaphores* mutex3 = new Semaphores(0);
+	Semaphores* mutex4 = new Semaphores(0);
+	Semaphores* mutex5 = new Semaphores(0);
 	Semaphores* unloading = new Semaphores(1);
 
 

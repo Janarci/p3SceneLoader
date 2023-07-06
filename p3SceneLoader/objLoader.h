@@ -39,7 +39,7 @@ class objLoader : public IETThread
 {
 public:
 
-	objLoader(int id, std::vector<std::pair<ObjData*, std::string>>& scene, Semaphores* mutexSem);
+	objLoader(int id, std::vector<std::pair<ObjData*, std::string>>& scene, Semaphores* limitSem, Semaphores* mutexSem);
 	void run() override;
 
 	void unload();
@@ -65,6 +65,7 @@ public:
 
 private:
 	int id;
+	Semaphores* limitSem;
 	Semaphores* mutexSem;
 
 	glm::mat4 randomTransfom();

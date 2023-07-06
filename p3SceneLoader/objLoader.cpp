@@ -7,10 +7,11 @@
 #include "stb_image.h"
 
 
-objLoader::objLoader( int id, std::vector<std::pair<ObjData*, std::string>>& scene, Semaphores* mutexSem)
+objLoader::objLoader( int id, std::vector<std::pair<ObjData*, std::string>>& scene, Semaphores* limitSem, Semaphores* mutexSem)
 {
 	this->id = id;
 	this->scene = scene;
+	this->limitSem = limitSem;
 	this->mutexSem = mutexSem;
 }
 
@@ -20,6 +21,8 @@ void objLoader::run()
 
 	while(true)
 	{
+		mutexSem->acquire();
+
 		if (LoadBtn == true)
 		{
 			load();
@@ -211,12 +214,12 @@ void objLoader::load()
 	}
 
 	for (int i = 0; i < scene.size(); i++) {
-		this->sleep(5000);
+		//this->sleep(5000);
 
-		mutexSem->acquire();
+		limitSem->acquire();
 		LoadObjFile_(scene[i].first, scene[i].second);
 		progressPercentage = (float)(i + 1) / (float)scene.size() * 100.0f;
-		mutexSem->release();
+		limitSem->release();
 
 	}
 	std::cout << id << std::endl;

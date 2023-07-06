@@ -386,19 +386,19 @@ void Runner::run()
 
 
 	//start the threads
-	objLoader scene1Loader( 1, scene1, running);
+	objLoader scene1Loader( 1, scene1, running, mutex1);
 	scene1Loader.start();
 
-	objLoader scene2Loader(2, scene2, running);
+	objLoader scene2Loader(2, scene2, running, mutex2);
 	scene2Loader.start();
 
-	objLoader scene3Loader(3, scene3, running);
+	objLoader scene3Loader(3, scene3, running, mutex3);
 	scene3Loader.start();
 
-	objLoader scene4Loader(4, scene4, running);
+	objLoader scene4Loader(4, scene4, running, mutex4);
 	scene4Loader.start();
 
-	objLoader scene5Loader(5, scene5, running);
+	objLoader scene5Loader(5, scene5, running, mutex5);
 	scene5Loader.start();
 
 	// set bg color to green  
@@ -943,7 +943,13 @@ void Runner::LoadObjToMemory_(ObjData* objData, GLfloat scaleFactor, GLfloat tOf
 		sizeof(VertexData),
 		(void*)offsetof(VertexData, normal)
 	);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+	//delete the VBO and EBO buffers
+	glDeleteBuffers(1, &BVBO);
+	glDeleteBuffers(1, &BEBO);
 	if (objData->textures.empty())
 	{
 		this->LoadTextureData_(objData, texture, texture2, num);
@@ -988,11 +994,13 @@ void Runner::renderAll(objLoader* scene1Loader, objLoader* scene2Loader, objLoad
 	ImGui::Text("SCENE 1: %.2f", scene1Loader->progressPercentage);
 	if (ImGui::Button("Load scene 1")) {
 		scene1Loader->LoadBtn = true;
+		mutex1->release();
 	}
 	if (ImGui::Button("Unload scene 1")) {
 		scene1Loader->UnloadBtn = true;
 		scene1Loader->unloadVAO();
-		
+		mutex1->release();
+
 	}
 
 	ImGui::Checkbox("View scene 1", &this->view1);
@@ -1000,11 +1008,13 @@ void Runner::renderAll(objLoader* scene1Loader, objLoader* scene2Loader, objLoad
 	ImGui::Text("SCENE 2: %.2f", scene2Loader->progressPercentage);
 	if (ImGui::Button("Load scene 2")) {
 		scene2Loader->LoadBtn = true;
+		mutex2->release();
 	}
 	if (ImGui::Button("Unload scene 2")) {
 		scene2Loader->UnloadBtn = true;
 		scene2Loader->unloadVAO();
-		
+		mutex2->release();
+
 	}
 
 	ImGui::Checkbox("View scene 2", &this->view2);
@@ -1012,11 +1022,13 @@ void Runner::renderAll(objLoader* scene1Loader, objLoader* scene2Loader, objLoad
 	ImGui::Text("SCENE 3: %.2f", scene3Loader->progressPercentage);
 	if (ImGui::Button("Load scene 3")) {
 		scene3Loader->LoadBtn = true;
+		mutex3->release();
 	}
 	if (ImGui::Button("Unload scene 3")) {
 		scene3Loader->UnloadBtn = true;
 		scene3Loader->unloadVAO();
-		
+		mutex3->release();
+
 	}
 
 	ImGui::Checkbox("View scene 3", &this->view3);
@@ -1024,11 +1036,13 @@ void Runner::renderAll(objLoader* scene1Loader, objLoader* scene2Loader, objLoad
 	ImGui::Text("SCENE 4: %.2f", scene4Loader->progressPercentage);
 	if (ImGui::Button("Load scene 4")) {
 		scene4Loader->LoadBtn = true;
+		mutex4->release();
 	}
 	if (ImGui::Button("Unload scene 4")) {
 		scene4Loader->UnloadBtn = true;
 		scene4Loader->unloadVAO();
-		
+		mutex4->release();
+
 
 	}
 
@@ -1037,11 +1051,12 @@ void Runner::renderAll(objLoader* scene1Loader, objLoader* scene2Loader, objLoad
 	ImGui::Text("SCENE 5: %.2f", scene5Loader->progressPercentage);
 	if (ImGui::Button("Load scene 5")) {
 		scene5Loader->LoadBtn = true;
+		mutex5->release();
 	}
 	if (ImGui::Button("Unload scene 5")) {
 		scene5Loader->UnloadBtn = true;
 		scene5Loader->unloadVAO();
-		
+		mutex5->release();
 	}
 
 	ImGui::Checkbox("View scene 5", &this->view5);
